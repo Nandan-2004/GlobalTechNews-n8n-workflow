@@ -1,0 +1,185 @@
+{
+  "name": "Globaltechnews",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 90
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        -112
+      ],
+      "id": "06754aca-aadc-418f-a14e-75dbef10b22e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/top-headlines?category=technology&language=en&apiKey=b5e904753*****5d9456939661a205",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        432,
+        -112
+      ],
+      "id": "0747289f-7151-4ab9-a0d5-8a3****1270fd",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Summarize this news article in 3 short bullet points.\n\n\ud83d\udcf0 Title: {{$json[\"title\"]}}\n\ud83d\udcd6 Description: {{$json[\"description\"]}}\n\ud83d\udcc4 Content: {{$json[\"content\"]}}\n",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        880,
+        -112
+      ],
+      "id": "eb0ff145-0f****-9bba5b7baa10",
+      "name": "Basic LLM Chain",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        880,
+        80
+      ],
+      "id": "d5de5e5a-d8f3-*****07cec9f9b",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "spVQMbGwHWkHkVWF",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "articles",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -112
+      ],
+      "id": "4b899b97-045e-4*****d-801dd3c06027",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "chatId": "-481***65599",
+        "text": "=<b>\ud83d\udcf0 {{$('Split Out').item.json.title}}</b>\n\n\ud83d\udcd6 {{$('Split Out').item.json.description}}\n\n\ud83d\udccc {{$('Basic LLM Chain').item.json.text}}\n\n\ud83d\udd17 <a href=\"{{$('Split Out').item.json.url}}\">Read more</a>",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1232,
+        -112
+      ],
+      "id": "3762fe20-ae****-88a8-6a29ca2efeec",
+      "name": "Send a text message",
+      "webhookId": "8149d8b*****-87cbd9b7a6ad",
+      "credentials": {
+        "telegramApi": {
+          "id": "8UF4JjonVvl6POpL",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "ZRI78nN1Y5FnISoa",
+    "executionTimeout": -1
+  },
+  "versionId": "579905f4-****8-4a96-b961-fc262e417b6b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "085d4a7d****66423712041f84877aba2d1f4894afe8a5daa9d33f84d0d"
+  },
+  "id": "ZRI78n**nISoa",
+  "tags": []
+}
