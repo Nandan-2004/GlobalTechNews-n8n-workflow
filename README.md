@@ -49,6 +49,3 @@ Schedule → HTTP Request → Split Out → LLM Summarizer → Telegram
 ```
 
 ---
-
-## 📜 License
-This project is open-source under the MIT License.
